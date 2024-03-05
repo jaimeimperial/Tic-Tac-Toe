@@ -1,0 +1,108 @@
+// Tic Tac Toe
+
+// Store game status elements here to allow us to use it more easily
+const statusDisplay = document.querySelector('.game--status');
+let gameActive = true;
+let currentPlayer = "X";
+let gameState = ["","","","","","","","",""];
+const winningMessage = () => `Player ${currentPlayer} has won!`;
+const drawMessage = () => `Game ended in a draw!`;
+const currentPlayerTurn = () => `It's ${currentPlayer}'s turn`;
+
+/*
+We set the initial message to let players know whose turn 
+*/
+
+statusDisplay.innerHTML = currentPlayerTurn();
+
+// Constant for winning conditions in Tic Tac Toe
+const winningConditions = [
+    [0,1,2],
+    [3,4,5],
+    [6,7,8],
+    [0,3,6],
+    [1,4,7],
+    [2,5,8],
+    [0,4,8],
+    [2,4,6]
+];
+
+function handleCellPlayed(clickedCell, clickedCellIndex) {
+    // Updating game state and UI to reflect played move
+    gameState[clickedCellIndex] = currentPlayer;
+    clickedCell.innerHTML = currentPlayer;
+}
+
+function handlePlayerChange() {
+    currentPlayer = currentPlayer === "X" ? "O" : "X";
+    statusDisplay.innerHTML = currentPlayerTurn();
+}
+
+function handleResultValidation() {
+    let roundWon = false;
+
+    // Checks if win conditions are fulfilled
+    for (let i = 0; i <= 7; i++){
+        const winCondition = winningConditions[i];
+        let a = gameState[winCondition[0]];
+        let b = gameState[winCondition[1]];
+        let c = gameState[winCondition[2]];
+        if (a === '' || b === '' || c === '') {
+            continue;
+        }
+        if (a === b && b === c) {
+            roundWon = true;
+            break
+        }
+    }
+
+    // Displays winning message
+    if (roundWon) {
+        statusDisplay.innerHTML = winningMessage();
+        gameActive = false;
+        return;
+    }
+
+    // Checks if there are any values of game state array without an X or O
+    let roundDraw = !gameState.includes("");
+    if (roundDraw) {
+        statusDisplay.innerHTML = drawMessage();
+        gameActive = false;
+        return;
+    }
+
+    // If no one won and there are still moves, continue by changing player
+    handlePlayerChange();
+}
+
+function handleCellClick(clickedCellEvent) {
+    // Saving clicked html element in a var 
+    const clickedCell = clickedCellEvent.target;
+
+    /*
+    Grab the 'data-cell-index' attr from clicked cell to get which cell was clicked
+    getAttribute returns a string value so need to parse to get an int
+    */
+    const clickedCellIndex = parseInt(
+        clickedCell.getAttribute('data-cell-index')
+    );
+
+    // Need to check whether call has already been played or if game is paused
+    if (gameState[clickedCellIndex] !== "" || !gameActive){
+        return;
+    }
+
+    handleCellPlayed(clickedCell, clickedCellIndex);
+    handleResultValidation();
+}
+
+function handleRestartGame() {
+    gameActive = true;
+    currentPlayer = "X";
+    gameState = ["","","","","","","","",""];
+    statusDisplay.innerHTML = currentPlayerTurn();
+    document.querySelectorAll('.cell').forEach(cell => cell.innerHTML = "");
+}
+
+document.querySelectorAll('.cell').forEach(cell => cell.addEventListener('click', handleCellClick));
+document.querySelector('.game--restart').addEventListener('click', handleRestartGame);
